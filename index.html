@@ -13,12 +13,14 @@
     }
     h1 {
       text-align: center;
+      font-size: 2.5em; /* 40px/16=2.5em */
     }
     .wrapper {
       display: flex;
+      flex-wrap: wrap;
       justify-content: center;
       align-items: flex-start;
-      gap: 40px;
+      gap: 20px;
       max-width: 1200px;
       margin: 0 auto;
     }
@@ -29,6 +31,7 @@
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
       width: 100%;
       max-width: 500px;
+      box-sizing: border-box;
     }
     label {
       display: block;
@@ -52,9 +55,12 @@
     .button-group {
       margin-top: 20px;
       display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
       justify-content: space-between;
     }
     button {
+      flex: 1 1 48%;
       padding: 10px 20px;
       font-size: 16px;
     }
@@ -68,19 +74,38 @@
       margin-top: 20px;
       text-align: center;
     }
-    .wind-circle img {
-      max-height: 50%;
-      max-width: 50%;
+    .wind-circle canvas {
+      background-color: #fff;
+      border: 1px solid #999;
       cursor: crosshair;
+      width: 100%;
+      max-width: 300px;
+      height: auto;
     }
     .key-results {
-        color: green;
-        font-weight: 700;
+      color: green;
+      font-weight: 700;
+    }
+    @media (max-width: 600px) {
+      .wrapper {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .button-group {
+        flex-direction: column;
+      }
+      button {
+        flex: 1 1 100%;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>PGA Tour 2k25<br>Distance Calculator</h1>
+  <h1>
+    <img src="assets/2k25_logo.png" alt="PGA Tour 2k25 Logo" style="max-width: 20%; max-height: 20%;">
+    <br>
+    Distance Calculator
+  </h1>
   <div class="wrapper">
     <!-- Input Section -->
     <div class="input-section">
@@ -92,7 +117,7 @@
 
         <div class="wind-circle">
           <label>Select Wind Direction Visually:</label>
-          <img src="assets/circle_graph.png" alt="Wind Direction Circle" onclick="setWindDirection(event, this)">
+          <canvas id="windCanvas" width="300" height="300"></canvas>
         </div>
 
         <label>Lie Slope:
@@ -142,7 +167,7 @@
         <tr><td>Lie Adjustment:</td><td id="lieAdj">0.0 yds</td></tr>
         <tr><td>Side Slope Offset:</td><td id="sideAdj">0.0 yds</td></tr>
         <tr class="key-results"><td>Playing Distance:</td><td id="playDist">0.0 yds</td></tr>
-          <tr class="key-results"><td>Left/Right Offset:</td><td id="lrOffset">0.0 yds</td></tr>
+        <tr class="key-results"><td>Left/Right Offset:</td><td id="lrOffset">0.0 yds</td></tr>
       </table>
     </div>
   </div>
@@ -182,7 +207,7 @@
     const headwind = windSpd * Math.cos(windFrom * rad);
     const crosswind = windSpd * Math.sin(windFrom * rad);
 
-    let windAdj = Math.min(windSpd, 10)*1 + Math.max(0, Math.min(windSpd-10, 6))*1.5 + Math.max(0, windSpd-16)*2;
+    let windAdj = Math.min(headwind, 10)*1 + Math.max(0, Math.min(headwind-10, 6))*1.5 + Math.max(0, headwind-16)*2;
 
     let lieAdj = 0;
     if (lieSlope === 'Upslope' && windFrom <= 90) {
@@ -198,7 +223,7 @@
     let sideAdj = 0;
     if (sideSlope !== 'Flat') {
         const dist = yards;
-        const factor;
+        let factor = 0;
         
         if (sideGrad === 'Green') {
           factor = dist * 0.01;
@@ -211,9 +236,6 @@
           factor = 0;
         }
         
-        //const factor = sideGrad === 'Green' ? (dist <= 150 ? 1 : 2) :
-                        //sideGrad === 'Yellow' ? (dist <= 150 ? 2 : 5) :
-                        //sideGrad === 'Red' ? (dist <= 150 ? 10 : 20) : 0;
         sideAdj = factor * (sideSlope === 'Above feet' ? 1 : -1);
     }
 
@@ -247,13 +269,81 @@
       const degrees = (angle + 450) % 360; // Adjust so 0° is at the top
       document.getElementById('windDir').value = Math.round(degrees);
     }
+
+    const canvas = document.getElementById('windCanvas');
+    const ctx = canvas.getContext('2d');
+    const center = { x: canvas.width / 2, y: canvas.height / 2 };
+    const radius = 100;
+    let dragging = true;
+    let end = { x: center.x + radius, y: center.y };
+
+    function drawWindSelector() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+      // Draw circle
+      ctx.beginPath();
+      ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI);
+      ctx.stroke();
+    
+      // Draw main wind direction line
+      ctx.beginPath();
+      ctx.moveTo(center.x, center.y);
+      ctx.lineTo(end.x, end.y);
+      ctx.strokeStyle = '#00f';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    
+      // Draw arrowhead
+      const dx = end.x - center.x;
+      const dy = end.y - center.y;
+      const angle = Math.atan2(dy, dx);
+    
+      const arrowLength = 10;
+      const arrowAngle = Math.PI / 8;
+    
+      // Points for arrowhead
+      const arrowX1 = end.x - arrowLength * Math.cos(angle - arrowAngle);
+      const arrowY1 = end.y - arrowLength * Math.sin(angle - arrowAngle);
+      const arrowX2 = end.x - arrowLength * Math.cos(angle + arrowAngle);
+      const arrowY2 = end.y - arrowLength * Math.sin(angle + arrowAngle);
+    
+      ctx.beginPath();
+      ctx.moveTo(end.x, end.y);
+      ctx.lineTo(arrowX1, arrowY1);
+      ctx.moveTo(end.x, end.y);
+      ctx.lineTo(arrowX2, arrowY2);
+      ctx.stroke();
+    }
+      
+
+    canvas.addEventListener('mousemove', function (e) {
+      if (!dragging) return;
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+      end.x = mouseX;
+      end.y = mouseY;
+      drawWindSelector();
+
+      const dx = mouseX - center.x;
+      const dy = mouseY - center.y;
+      const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+      const degrees = (angle + 450) % 360; // 0° = top
+      document.getElementById('windDir').value = Math.round(degrees);
+    });
+
+    canvas.addEventListener('click', function () {
+      dragging = !dragging;
+    });
+
+    drawWindSelector();
   </script>
 </body>
 </html>
 
 <!--
   PGA Tour 2k25 Distance Calculator
-  Copyright (C) 2024
+  Copyright (C) 2025
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
