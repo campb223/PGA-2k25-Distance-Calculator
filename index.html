@@ -198,9 +198,22 @@
     let sideAdj = 0;
     if (sideSlope !== 'Flat') {
         const dist = yards;
-        const factor = sideGrad === 'Green' ? (dist <= 150 ? 1 : 2) :
-                        sideGrad === 'Yellow' ? (dist <= 150 ? 2 : 5) :
-                        sideGrad === 'Red' ? (dist <= 150 ? 10 : 20) : 0;
+        const factor;
+        
+        if (sideGrad === 'Green') {
+          factor = dist * 0.01;
+        } else if (sideGrad === 'Yellow') {
+          // Linearly interpolate between 2 (at 100 yds) and 5 (at 200 yds)
+          factor = Math.min(5, Math.max(2, 2 + ((dist - 100) * (3 / 100))));
+        } else if (sideGrad === 'Red') {
+          factor = dist * 0.1;
+        } else {
+          factor = 0;
+        }
+        
+        //const factor = sideGrad === 'Green' ? (dist <= 150 ? 1 : 2) :
+                        //sideGrad === 'Yellow' ? (dist <= 150 ? 2 : 5) :
+                        //sideGrad === 'Red' ? (dist <= 150 ? 10 : 20) : 0;
         sideAdj = factor * (sideSlope === 'Above feet' ? 1 : -1);
     }
 
