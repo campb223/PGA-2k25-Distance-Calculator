@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PGA Tour 2k25 Distance Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .input-section, .output-section {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 500px;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      box-sizing: border-box;
+    }
+    .result-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    .result-table td {
+      padding: 8px;
+      border-bottom: 1px solid #ccc;
+    }
+    .button-group {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+    .error {
+      color: red;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    .wind-circle {
+      position: relative;
+      margin-top: 20px;
+      text-align: center;
+    }
+    .wind-circle img {
+      max-height: 50%;
+      max-width: 50%;
+      cursor: crosshair;
+    }
+    .key-results {
+        color: green;
+        font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <h1>PGA Tour 2k25<br>Distance Calculator</h1>
+  <div class="wrapper">
+    <!-- Input Section -->
+    <div class="input-section">
+      <form id="calculatorForm">
+        <label>Yards to Pin:<input type="number" id="yardsToPin" required></label>
+        <label>Elevation (in feet):<input type="number" id="elevation" required></label>
+        <label>Wind Speed (mph):<input type="number" id="windSpeed" required></label>
+        <label>Wind Direction (degrees):<input type="number" id="windDir" required></label>
+
+        <div class="wind-circle">
+          <label>Select Wind Direction Visually:</label>
+          <img src="assets/circle_graph.png" alt="Wind Direction Circle" onclick="setWindDirection(event, this)">
+        </div>
+
+        <label>Lie Slope:
+          <select id="lieSlope">
+            <option>Flat</option>
+            <option>Upslope</option>
+            <option>Downslope</option>
+          </select>
+        </label>
+        <label>Lie Gradient (Color):
+          <select id="lieGradient">
+            <option>Green</option>
+            <option>Yellow</option>
+            <option>Red</option>
+          </select>
+        </label>
+
+        <label>Side Slope Direction:
+          <select id="sideSlope">
+            <option>Flat</option>
+            <option>Above feet</option>
+            <option>Below feet</option>
+          </select>
+        </label>
+        <label>Side Slope Gradient:
+          <select id="sideGradient">
+            <option>Green</option>
+            <option>Yellow</option>
+            <option>Red</option>
+          </select>
+        </label>
+
+        <div class="button-group">
+          <button type="submit">Calculate</button>
+          <button type="button" onclick="resetForm()">Reset</button>
+        </div>
+        <div id="errorMessage" class="error"></div>
+      </form>
+    </div>
+
+    <!-- Output Section -->
+    <div class="output-section">
+      <table class="result-table">
+        <tr><td>Headwind Component:</td><td id="headwind">0.0 yds</td></tr>
+        <tr><td>Crosswind Component:</td><td id="crosswind">0.0 yds</td></tr>
+        <tr><td>Wind Adjustment:</td><td id="windAdj">0.0 yds</td></tr>
+        <tr><td>Lie Adjustment:</td><td id="lieAdj">0.0 yds</td></tr>
+        <tr><td>Side Slope Offset:</td><td id="sideAdj">0.0 yds</td></tr>
+        <tr class="key-results"><td>Playing Distance:</td><td id="playDist">0.0 yds</td></tr>
+          <tr class="key-results"><td>Left/Right Offset:</td><td id="lrOffset">0.0 yds</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('calculatorForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        calculate();
+    });
+  
+    function calculate() {
+    const errorEl = document.getElementById('errorMessage');
+    errorEl.innerText = '';
+
+    const yards = parseFloat(document.getElementById('yardsToPin').value);
+    const elevFeet = parseFloat(document.getElementById('elevation').value);
+    const windSpd = parseFloat(document.getElementById('windSpeed').value);
+    const windDir = parseFloat(document.getElementById('windDir').value);
+
+    if (isNaN(yards) || isNaN(elevFeet) || isNaN(windSpd) || isNaN(windDir)) {
+        errorEl.innerText = 'Please fill in all required numeric fields correctly.';
+        return;
+    }
+    if (windDir < 0 || windDir >= 360) {
+        errorEl.innerText = 'Wind direction must be between 0 and 359 degrees.';
+        return;
+    }
+
+    const lieSlope = document.getElementById('lieSlope').value;
+    const lieGrad = document.getElementById('lieGradient').value;
+    const sideSlope = document.getElementById('sideSlope').value;
+    const sideGrad = document.getElementById('sideGradient').value;
+
+    const windFrom = (windDir + 180) % 360;
+    const rad = Math.PI / 180;
+
+    const headwind = windSpd * Math.cos(windFrom * rad);
+    const crosswind = windSpd * Math.sin(windFrom * rad);
+
+    let windAdj = Math.min(windSpd, 10)*1 + Math.max(0, Math.min(windSpd-10, 6))*1.5 + Math.max(0, windSpd-16)*2;
+
+    let lieAdj = 0;
+    if (lieSlope === 'Upslope' && windFrom <= 90) {
+        if (lieGrad === 'Green') lieAdj = 1;
+        if (lieGrad === 'Yellow') lieAdj = 2;
+        if (lieGrad === 'Red') lieAdj = 5;
+    } else if (lieSlope === 'Downslope' && windFrom <= 90) {
+        if (lieGrad === 'Green') lieAdj = 0;
+        if (lieGrad === 'Yellow') lieAdj = -0.5;
+        if (lieGrad === 'Red') lieAdj = -2;
+    }
+
+    let sideAdj = 0;
+    if (sideSlope !== 'Flat') {
+        const dist = yards;
+        const factor = sideGrad === 'Green' ? (dist <= 150 ? 1 : 2) :
+                        sideGrad === 'Yellow' ? (dist <= 150 ? 2 : 5) :
+                        sideGrad === 'Red' ? (dist <= 150 ? 10 : 20) : 0;
+        sideAdj = factor * (sideSlope === 'Above feet' ? 1 : -1);
+    }
+
+    const elevYards = elevFeet / 3;
+    const playDist = yards + elevYards + (headwind > 0 ? windAdj * 1.2 : -windAdj * 0.8) + lieAdj;
+    const lrOffset = Math.round(crosswind + sideAdj);
+
+    document.getElementById('headwind').innerText = `${headwind.toFixed(1)} yds`;
+    document.getElementById('crosswind').innerText = `${crosswind.toFixed(1)} yds`;
+    document.getElementById('windAdj').innerText = `${windAdj.toFixed(1)} yds`;
+    document.getElementById('lieAdj').innerText = `${lieAdj.toFixed(1)} yds`;
+    document.getElementById('sideAdj').innerText = `${sideAdj.toFixed(1)} yds`;
+    document.getElementById('playDist').innerText = `${playDist.toFixed(1)} yds`;
+    document.getElementById('lrOffset').innerText = `${Math.abs(lrOffset)} yds ${lrOffset < 0 ? 'left' : lrOffset > 0 ? 'right' : ''}`;
+
+    }
+
+    function resetForm() {
+    document.querySelectorAll('input, select').forEach(el => el.value = el.tagName === 'SELECT' ? el.options[0].value : '');
+    document.querySelectorAll('.result-table td:nth-child(2)').forEach(el => el.innerText = '0.0 yds');
+    document.getElementById('errorMessage').innerText = '';
+    }
+
+    function setWindDirection(event, image) {
+      const rect = image.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const x = event.clientX - centerX;
+      const y = event.clientY - centerY;
+      const angle = Math.atan2(y, x) * (180 / Math.PI);
+      const degrees = (angle + 450) % 360; // Adjust so 0° is at the top
+      document.getElementById('windDir').value = Math.round(degrees);
+    }
+  </script>
+</body>
+</html>
+
+<!--
+  PGA Tour 2k25 Distance Calculator
+  Copyright (C) 2024
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program. If not, see <https://www.gnu.org/licenses/>.
+-->
