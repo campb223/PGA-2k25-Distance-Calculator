@@ -2,6 +2,11 @@
 
 A clean and interactive web-based tool to help players accurately calculate the **true playing distance** and **side-to-side shot offset** in PGA Tour 2K25 based on elevation, wind, and ball lie.
 
+## 🌐 Live Webpage
+
+Try the calculator live here: [PGA Tour 2k25 Distance Calculator](https://sites.google.com/view/mtndewme5-pga-2k25-calculator/main)
+
+
 ## 🎯 Features
 
 - Input game-relevant shot conditions: distance, wind, elevation, and slopes
