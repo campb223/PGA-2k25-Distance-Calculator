@@ -59,63 +59,6 @@
       gap: 10px;
       justify-content: space-between;
     }
-    button {
-      flex: 1 1 48%;
-      padding: 10px 20px;
-      font-size: 16px;
-      display: inline-block;
-      outline: none;
-      cursor: pointer;
-      font-size: 14px;
-      line-height: 1;
-      border-radius: 500px;
-      transition-property: background-color,border-color,color,box-shadow,filter;
-      transition-duration: .3s;
-      border: 1px solid transparent;
-      letter-spacing: 2px;
-      min-width: 160px;
-      text-transform: uppercase;
-      white-space: normal;
-      font-weight: 700;
-      text-align: center;
-      padding: 17px 48px;
-      color: #fff;
-      background-color: #1ED760;
-      height: 48px;
-        :hover{
-            transform: scale(1.04);
-            background-color: #21e065;
-        }
-    }
-
-    .reset-button {
-      flex: 1 1 48%;
-      padding: 10px 20px;
-      font-size: 16px;
-      display: inline-block;
-      outline: none;
-      cursor: pointer;
-      font-size: 14px;
-      line-height: 1;
-      border-radius: 500px;
-      transition-property: background-color,border-color,color,box-shadow,filter;
-      transition-duration: .3s;
-      border: 1px solid transparent;
-      letter-spacing: 2px;
-      min-width: 160px;
-      text-transform: uppercase;
-      white-space: normal;
-      font-weight: 700;
-      text-align: center;
-      padding: 17px 48px;
-      color: #fff;
-      background-color: #C41E3A;
-      height: 48px;
-        :hover{
-            transform: scale(1.04);
-            background-color: #C41E3A;
-        }
-    }
     .error {
       color: red;
       font-weight: bold;
@@ -124,14 +67,16 @@
     .wind-circle {
       position: relative;
       margin-top: 20px;
+      margin-bottom: 20px;
       text-align: center;
+      max-width: 100%;
+      height: 350px;
     }
     .wind-circle canvas {
       background-color: #fff;
       border: 1px solid #999;
       cursor: crosshair;
-      width: 100%;
-      max-width: 300px;
+      max-width: 100%;
       height: auto;
     }
     .key-results {
@@ -186,6 +131,107 @@
         background-color: #333;
         border-color: #666;
     }
+
+    #windDirectionSelector button.selected {
+      background-color: #f06292;
+      color: white;
+      font-weight: bold;
+    }
+
+    .wind-circle-container {
+      position: relative;
+      width: 300px;
+      height: 300px;
+      margin: auto auto;
+    }
+    
+    /* Calculate and Reset Buttons */
+    .calc-btn {
+      flex: 1 1 48%;
+      padding: 17px 48px;
+      font-size: 14px;
+      line-height: 1;
+      border-radius: 500px;
+      transition-property: background-color, border-color, color, box-shadow, filter;
+      transition-duration: 0.3s;
+      border: 1px solid transparent;
+      letter-spacing: 2px;
+      min-width: 160px;
+      text-transform: uppercase;
+      white-space: normal;
+      font-weight: 700;
+      text-align: center;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    /* Calculate Button Style */
+    .calc-btn.calculate {
+      background-color: #1ED760;
+    }
+
+    .calc-btn.calculate:hover {
+      transform: scale(1.04);
+      background-color: #21e065;
+    }
+
+    /* Reset Button Style */
+    .calc-btn.reset {
+      background-color: #C41E3A;
+    }
+
+    .calc-btn.reset:hover {
+      transform: scale(1.04);
+      background-color: #b91c35;
+    }
+
+    /* ========================
+      Wind Direction Button Styling (Unchanged)
+      ======================== */
+    .wind-btn {
+      position: absolute;
+      width: 40px; /* Adjust as needed */
+      height: 40px;
+      padding: 0;
+      border-radius: 50%;
+      background-color: #ddd;
+      border: 1px solid #999;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      text-align: center;
+      line-height: 40px;
+    }
+
+    .wind-btn:hover {
+      background-color: #bbb;
+    }
+
+    .wind-btn.selected {
+      background-color: #f06292;
+      color: #fff;
+      font-weight: bold;
+    }
+
+    .wind-center-indicator {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      transform: translate(-50%, -50%);
+    }
+    
+    .wind-arrow {
+      width: 0;
+      height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-bottom: 20px solid #666; /* Arrow color */
+      transform-origin: center bottom;
+      transition: transform 0.3s ease;
+    }
+    
   </style>
 </head>
 <body>
@@ -204,16 +250,38 @@
     <!-- Input Section -->
     <div class="input-section">
       <form id="calculatorForm">
+
+        <label>Swing Bias:
+          <select id="swingBias">
+            <option value="draw" selected>Draw</option>
+            <option value="fade">Fade</option>
+            <option value="neutral">Neutral</option>
+          </select>
+        </label>
+
         <label>Yards to Pin:<input type="number" id="yardsToPin" required></label>
         <label>Elevation (in feet) (Input negative # for downhill):<input type="number" id="elevation" required></label>
         <label>Wind Speed (mph):<input type="number" id="windSpeed" required></label>
-        <label>Wind Direction (degrees):<input type="number" id="windDir" required></label>
+        <label style="display: none;">Wind Direction (degrees):<input type="number" id="windDir" required></label>
 
         <div class="wind-circle">
-          <label>Select Wind Direction Visually:</label>
-          <canvas id="windCanvas" width="300" height="300"></canvas>
+          <label style="display:block; text-align:left;">Wind Direction:</label>
+          <div id="windDirectionSelector" class="wind-circle-container" style="max-height: 700px;">
+            <button type="button" class="wind-btn" style="top: 0%; left: 50%;" onclick="setWindDir(0)">N</button>
+            <button type="button" class="wind-btn" style="top: 20%; left: 80%;" onclick="setWindDir(45)">NE</button>
+            <button type="button" class="wind-btn" style="top: 50%; left: 100%;" onclick="setWindDir(90)">E</button>
+            <button type="button" class="wind-btn" style="top: 80%; left: 80%;" onclick="setWindDir(135)">SE</button>
+            <button type="button" class="wind-btn" style="top: 100%; left: 50%;" onclick="setWindDir(180)">S</button>
+            <button type="button" class="wind-btn" style="top: 80%; left: 20%;" onclick="setWindDir(225)">SW</button>
+            <button type="button" class="wind-btn" style="top: 50%; left: 0%;" onclick="setWindDir(270)">W</button>
+            <button type="button" class="wind-btn" style="top: 20%; left: 20%;" onclick="setWindDir(315)">NW</button>
+            <div class="wind-center-indicator">
+              <div class="wind-arrow"></div>
+            </div>
+          </div>
+          <input type="hidden" id="windDir" value="0">
         </div>
-
+        
         <label>Lie Slope:
           <select id="lieSlope">
             <option>Flat</option>
@@ -249,8 +317,8 @@
         </label>
 
         <div class="button-group">
-          <button type="submit">Calculate</button>
-          <button type="button" class="reset-button" onclick="resetForm()">Reset</button>
+          <button type="submit" class="calc-btn calculate">Calculate</button>
+          <button type="button" class="calc-btn reset" onclick="resetForm()">Reset</button>
         </div>
         <div id="errorMessage" class="error"></div>
       </form>
@@ -305,7 +373,11 @@
     const rad = Math.PI / 180;
 
     const headwind = windSpd * Math.cos(windFrom * rad);
-    const crosswind = windSpd * Math.sin(windFrom * rad);
+    
+    const swingBias = document.getElementById('swingBias').value;
+    const baseCrosswind = windSpd * Math.sin(windFrom * rad);
+    const swingBiasMultiplier = getSwingBiasMultiplier(swingBias, windDir);
+    const crosswind = baseCrosswind * swingBiasMultiplier;
 
     let windAdj = Math.min(headwind, 10)*1 + Math.max(0, Math.min(headwind-10, 6))*1.5 + Math.max(0, headwind-16)*2;
 
@@ -378,7 +450,14 @@
     }
 
     function resetForm() {
-      document.querySelectorAll('input, select').forEach(el => el.value = el.tagName === 'SELECT' ? el.options[0].value : '');
+      //document.querySelectorAll('input, select').forEach(el => el.value = el.tagName === 'SELECT' ? el.options[0].value : '');
+      document.querySelectorAll('input').forEach(el => el.value = '');
+      document.querySelectorAll('select').forEach(el => {
+        if (el.id !== 'swingBias') {
+          el.value = el.options[0].value;
+        }
+      });
+
       document.querySelectorAll('.result-table td:nth-child(2)').forEach(el => el.innerText = '0.0 yds');
       document.getElementById('errorMessage').innerText = '';
       document.getElementById('liePercent').value = '100-100';
@@ -396,6 +475,8 @@
       const degrees = (angle + 450) % 360; // Adjust so 0° is at the top
       document.getElementById('windDir').value = Math.round(degrees);
     }
+
+    /*
 
     const canvas = document.getElementById('windCanvas');
     const ctx = canvas.getContext('2d');
@@ -464,6 +545,52 @@
     });
 
     drawWindSelector();
+    */
+
+    function setWindDir(degrees) {
+      document.getElementById('windDir').value = degrees;
+      
+      // Highlight selected button
+      const buttons = document.querySelectorAll('#windDirectionSelector button');
+      buttons.forEach(btn => btn.classList.remove('selected'));
+      const selectedBtn = [...buttons].find(btn => btn.innerText === degToLabel(degrees));
+      if (selectedBtn) selectedBtn.classList.add('selected');
+    
+      // Rotate the arrow
+      const arrow = document.querySelector('.wind-arrow');
+      arrow.style.transform = `rotate(${degrees}deg)`;
+    }
+    
+    function degToLabel(deg) {
+      switch (deg) {
+        case 0: return "N";
+        case 45: return "NE";
+        case 90: return "E";
+        case 135: return "SE";
+        case 180: return "S";
+        case 225: return "SW";
+        case 270: return "W";
+        case 315: return "NW";
+        default: return "";
+      }
+    }
+    
+    function getSwingBiasMultiplier(swingBias, windDir) {
+      // Map windDir degrees into one of the 8 labels
+      let windLabel = degToLabel(windDir);
+    
+      if (swingBias === "draw") {
+        // Draw bias gets 1.2 multiplier for NE, E, SE
+        return (windLabel === "NE" || windLabel === "E" || windLabel === "SE") ? 1.2 : 1;
+      } else if (swingBias === "fade") {
+        // Fade bias gets 1.2 multiplier for NW, W, SW
+        return (windLabel === "NW" || windLabel === "W" || windLabel === "SW") ? 1.2 : 1;
+      } else {
+        // Neutral swing bias
+        return 1;
+      }
+    }
+    
 
     // Dark mode toggle logic
     const darkModeToggle = document.getElementById('darkModeToggle');
