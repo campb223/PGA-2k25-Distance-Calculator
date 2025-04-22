@@ -87,6 +87,7 @@
             background-color: #21e065;
         }
     }
+
     .reset-button {
       flex: 1 1 48%;
       padding: 10px 20px;
@@ -149,9 +150,51 @@
         flex: 1 1 100%;
       }
     }
+
+    /* Dark mode styles */
+    body.dark-mode {
+        background-color: #1e1e1e;
+        color: #e0e0e0;
+    }
+    
+    body.dark-mode .input-section,
+    body.dark-mode .output-section {
+        background-color: #2c2c2c;
+        color: #e0e0e0;
+    }
+    
+    body.dark-mode input,
+    body.dark-mode select {
+        background-color: #444;
+        color: #e0e0e0;
+        border: 1px solid #666;
+    }
+    
+    body.dark-mode .result-table td {
+        border-bottom: 1px solid #555;
+    }
+    
+    body.dark-mode button {
+        background-color: #3a9b50;
+    }
+    
+    body.dark-mode .reset-button {
+        background-color: #b91c35;
+    }
+    
+    body.dark-mode .wind-circle canvas {
+        background-color: #333;
+        border-color: #666;
+    }
   </style>
 </head>
 <body>
+    <div style="text-align:center; margin-bottom: 10px;">
+      <label style="cursor: pointer;">
+        <input type="checkbox" id="darkModeToggle" checked>
+        Dark Mode
+      </label>
+    </div>
   <h1>
     <img src="https://github.com/campb223/PGA-2k25-Distance-Calculator/blob/main/assets/2k25_logo.png?raw=true" alt="PGA Tour 2k25 Logo" style="max-width: 35%; max-height: 35%;">
     <br>
@@ -162,7 +205,7 @@
     <div class="input-section">
       <form id="calculatorForm">
         <label>Yards to Pin:<input type="number" id="yardsToPin" required></label>
-        <label>Elevation (in feet):<input type="number" id="elevation" required></label>
+        <label>Elevation (in feet) (Input negative # for downhill):<input type="number" id="elevation" required></label>
         <label>Wind Speed (mph):<input type="number" id="windSpeed" required></label>
         <label>Wind Direction (degrees):<input type="number" id="windDir" required></label>
 
@@ -201,6 +244,10 @@
           </select>
         </label>
 
+        <label>Lie Percentage (min-max, e.g., 85-90):
+          <input type="text" id="liePercent" value="100-100" placeholder="e.g., 85-90">
+        </label>
+
         <div class="button-group">
           <button type="submit">Calculate</button>
           <button type="button" class="reset-button" onclick="resetForm()">Reset</button>
@@ -217,6 +264,8 @@
         <tr><td>Wind Adjustment:</td><td id="windAdj">0.0 yds</td></tr>
         <tr><td>Lie Adjustment:</td><td id="lieAdj">0.0 yds</td></tr>
         <tr><td>Side Slope Offset:</td><td id="sideAdj">0.0 yds</td></tr>
+        <tr><td>Rough Min Carry Distance:</td><td id="minCarry">0.0 yds</td></tr>
+        <tr><td>Rough Max Carry Distance:</td><td id="maxCarry">0.0 yds</td></tr>
         <tr class="key-results"><td>Playing Distance:</td><td id="playDist">0.0 yds</td></tr>
         <tr class="key-results"><td>Left/Right Offset:</td><td id="lrOffset">0.0 yds</td></tr>
       </table>
@@ -294,6 +343,30 @@
     const playDist = yards + elevYards + (headwind > 0 ? windAdj * 1.2 : -windAdj * 0.8) + lieAdj;
     const lrOffset = Math.round(crosswind + sideAdj);
 
+    // Lie Percentage Calculation
+    const liePercentInput = document.getElementById('liePercent').value.trim();
+    let minPercent = 100;
+    let maxPercent = 100;
+
+    if (liePercentInput.includes('-')) {
+        const parts = liePercentInput.split('-').map(p => parseFloat(p.trim()));
+        if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+            minPercent = parts[0];
+            maxPercent = parts[1];
+        }
+    } else {
+        const singleVal = parseFloat(liePercentInput);
+        if (!isNaN(singleVal)) {
+            minPercent = maxPercent = singleVal;
+        }
+    }
+
+    const minCarry = playDist * (minPercent / 100);
+    const maxCarry = playDist * (maxPercent / 100);
+
+    document.getElementById('minCarry').innerText = `${minCarry.toFixed(1)} yds`;
+    document.getElementById('maxCarry').innerText = `${maxCarry.toFixed(1)} yds`;
+
     document.getElementById('headwind').innerText = `${headwind.toFixed(1)} yds`;
     document.getElementById('crosswind').innerText = `${crosswind.toFixed(1)} yds`;
     document.getElementById('windAdj').innerText = `${windAdj.toFixed(1)} yds`;
@@ -305,9 +378,12 @@
     }
 
     function resetForm() {
-    document.querySelectorAll('input, select').forEach(el => el.value = el.tagName === 'SELECT' ? el.options[0].value : '');
-    document.querySelectorAll('.result-table td:nth-child(2)').forEach(el => el.innerText = '0.0 yds');
-    document.getElementById('errorMessage').innerText = '';
+      document.querySelectorAll('input, select').forEach(el => el.value = el.tagName === 'SELECT' ? el.options[0].value : '');
+      document.querySelectorAll('.result-table td:nth-child(2)').forEach(el => el.innerText = '0.0 yds');
+      document.getElementById('errorMessage').innerText = '';
+      document.getElementById('liePercent').value = '100-100';
+      document.getElementById('minCarry').innerText = '0.0 yds';
+      document.getElementById('maxCarry').innerText = '0.0 yds';
     }
 
     function setWindDirection(event, image) {
@@ -388,6 +464,21 @@
     });
 
     drawWindSelector();
+
+    // Dark mode toggle logic
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    const body = document.body;
+
+    // Enable dark mode by default on page load
+    body.classList.add('dark-mode');
+
+    darkModeToggle.addEventListener('change', function() {
+    if (this.checked) {
+        body.classList.add('dark-mode');
+    } else {
+        body.classList.remove('dark-mode');
+    }
+    });
   </script>
 </body>
 </html>
