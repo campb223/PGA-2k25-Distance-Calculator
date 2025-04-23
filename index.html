@@ -6,412 +6,420 @@
   <title>PGA Tour 2k25 Distance Calculator</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
-      margin: 0;
-      padding: 20px;
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 20px;
     }
     h1 {
-      text-align: center;
-      font-size: 2.5em; /* 40px/16=2.5em */
+        text-align: center;
+        font-size: 2.5em; /* 40px/16=2.5em */
     }
     .wrapper {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      align-items: flex-start;
-      gap: 20px;
-      max-width: 1200px;
-      margin: 0 auto;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: flex-start;
+        gap: 20px;
+        max-width: 90%;
+        margin: 0 auto 0 auto;
     }
-    .input-section, .output-section {
-      background: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 500px;
-      box-sizing: border-box;
+    .pga-logo {
+        max-width: 25%; 
+        max-height: 25%;
     }
     label {
-      display: block;
-      margin-top: 10px;
+        display: block;
+        margin-top: 10px;
+        margin-left: 10px;
+        margin-right: 10px;
+        width: 100%;
+        padding-left: 5px;
+    }
+    .input-section{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        width: 100%;
+        max-width: 500px;
+    }
+    .output-section {
+        display: block;
+        justify-content: center;
+        align-items: center;
+        background: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        width: 100%;
+        max-width: 500px;
     }
     input, select {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      box-sizing: border-box;
+        width: 90%;
+        padding: 8px;
+        margin-top: 5px;
     }
-    .result-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-    .result-table td {
-      padding: 8px;
-      border-bottom: 1px solid #ccc;
-    }
-    .button-group {
-      margin-top: 20px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: space-between;
-    }
-    .error {
-      color: red;
-      font-weight: bold;
-      margin-top: 10px;
-    }
-    .wind-circle {
-      position: relative;
-      margin-top: 20px;
-      margin-bottom: 20px;
-      text-align: center;
-      max-width: 100%;
-      height: 350px;
-    }
-    .wind-circle canvas {
-      background-color: #fff;
-      border: 1px solid #999;
-      cursor: crosshair;
-      max-width: 100%;
-      height: auto;
-    }
-    .key-results {
-      color: red;
-      font-weight: 700;
-      font-size: 2em;
-    }
-    @media (max-width: 600px) {
-      .wrapper {
-        flex-direction: column;
-        align-items: stretch;
-      }
-      .button-group {
-        flex-direction: column;
-      }
-      button {
-        flex: 1 1 100%;
-      }
-    }
-
-    /* Dark mode styles */
-    body.dark-mode {
-        background-color: #1e1e1e;
-        color: #e0e0e0;
-    }
-    
-    body.dark-mode .input-section,
-    body.dark-mode .output-section {
-        background-color: #2c2c2c;
-        color: #e0e0e0;
-    }
-    
-    body.dark-mode input,
-    body.dark-mode select {
-        background-color: #444;
-        color: #e0e0e0;
-        border: 1px solid #666;
-    }
-    
-    body.dark-mode .result-table td {
-        border-bottom: 1px solid #555;
-    }
-    
-    body.dark-mode button {
-        background-color: #3a9b50;
-    }
-    
-    body.dark-mode .reset-button {
-        background-color: #b91c35;
-    }
-    
-    body.dark-mode .wind-circle canvas {
-        background-color: #333;
-        border-color: #666;
-    }
-
-    #windDirectionSelector button.selected {
-      background-color: #f06292;
-      color: white;
-      font-weight: bold;
-    }
-
-    .wind-circle-container {
-      position: relative;
-      width: 300px;
-      height: 300px;
-      margin: auto auto;
-    }
-    
-    /* Calculate and Reset Buttons */
-    .calc-btn {
-      flex: 1 1 48%;
-      padding: 17px 48px;
-      font-size: 14px;
-      line-height: 1;
-      border-radius: 500px;
-      transition-property: background-color, border-color, color, box-shadow, filter;
-      transition-duration: 0.3s;
-      border: 1px solid transparent;
-      letter-spacing: 2px;
-      min-width: 160px;
-      text-transform: uppercase;
-      white-space: normal;
-      font-weight: 700;
-      text-align: center;
-      color: #fff;
-      cursor: pointer;
-    }
-
-    /* Calculate Button Style */
-    .calc-btn.calculate {
-      background-color: #1ED760;
-    }
-
-    .calc-btn.calculate:hover {
-      transform: scale(1.04);
-      background-color: #21e065;
-    }
-
-    /* Reset Button Style */
-    .calc-btn.reset {
-      background-color: #C41E3A;
-    }
-
-    .calc-btn.reset:hover {
-      transform: scale(1.04);
-      background-color: #b91c35;
-    }
-
-    /* ========================
-      Wind Direction Button Styling (Unchanged)
-      ======================== */
-    .wind-btn {
-      position: absolute;
-      width: 40px; /* Adjust as needed */
-      height: 40px;
-      padding: 0;
-      border-radius: 50%;
-      background-color: #ddd;
-      border: 1px solid #999;
-      font-size: 12px;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-      text-align: center;
-      line-height: 40px;
-    }
-
-    .wind-btn:hover {
-      background-color: #bbb;
-    }
-
-    .wind-btn.selected {
-      background-color: #f06292;
-      color: #fff;
-      font-weight: bold;
-    }
-
-    .wind-center-indicator {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 0;
-      height: 0;
-      transform: translate(-50%, -50%);
-    }
-    
-    .wind-arrow {
-      width: 0;
-      height: 0;
-      border-left: 10px solid transparent;
-      border-right: 10px solid transparent;
-      border-bottom: 20px solid #666; /* Arrow color */
-      transform-origin: center bottom;
-      transition: transform 0.3s ease;
-    }
-
-    /* Swing Bias Button Styling */
     .swing-bias-selector {
-      width: 500px;
+        width: 100%;
+    }
+    .swingBiasSelector { 
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+    }
+    input.apple-switch {
+        position: relative;
+        -webkit-appearance: none;
+        outline: none;
+        width: 50px;
+        height: 30px;
+        background-color: #fff;
+        border: 1px solid #D9DADC;
+        border-radius: 50px;
+        box-shadow: inset -20px 0 0 0 #fff;
+    }
+    input.apple-switch:after {
+        content: "";
+        position: absolute;
+        top: 1px;
+        left: 1px;
+        background: transparent;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        box-shadow: 2px 4px 6px rgba(0,0,0,0.2);
+    }
+    input.apple-switch:checked {
+        box-shadow: inset 20px 0 0 0 #4ed164;
+        border-color: #4ed164;
+    }
+    input.apple-switch:checked:after {
+        left: 20px;
+        box-shadow: -2px 4px 3px rgba(0,0,0,0.05);
     }
 
     .swing-btn {
-      padding: 10px 20px;
-      border: 1px solid #999;
-      background-color: #ddd;
-      color: #333;
-      font-size: 14px;
-      border-radius: 20px;
-      cursor: pointer;
-      margin: 5px;
-      width: 40%;
+        padding: 10px 20px;
+        border: 1px solid #999;
+        background-color: #ddd;
+        color: #333;
+        font-size: 1em;
+        border-radius: 20px;
+        cursor: pointer;
+        margin: 5px;
+        width: 40%;
     }
-
     .swing-btn:hover {
-      background-color: #bbb;
-      transform: scale(1.05);
+        background-color: #bbb;
+        transform: scale(1.05);
     }
-
     .swing-btn.selected {
-      background-color: #1ED760;
-      color: #fff;
-      font-weight: bold;
-      border-color: #1ED760;
+        background-color: #1ED760;
+        color: #fff;
+        font-weight: bold;
+        border-color: #1ED760;
     }
 
-    /* Dark Mode Support */
-    body.dark-mode .swing-btn {
-      background-color: #444;
-      color: #eee;
-      border-color: #666;
+    .wind-circle {
+        position: relative;
+        margin-top: 20px;
+        margin-bottom: 20px;
+        text-align: center;
+        max-width: 100%;
+        height: 400px;
     }
-
-    body.dark-mode .swing-btn:hover {
-      background-color: #555;
+    .wind-circle canvas {
+        background-color: #fff;
+        border: 1px solid #999;
+        cursor: crosshair;
+        max-width: 100%;
+        height: auto;
     }
-
-    body.dark-mode .swing-btn.selected {
-      background-color: #3a9b50;
-      border-color: #3a9b50;
-      color: #fff;
+    .wind-circle-container {
+        position: relative;
+        width: 300px;
+        height: 300px;
+        max-height: 700px;
+        margin: auto auto;
     }
-
+    .wind-btn {
+        position: absolute;
+        width: 40px; /* Adjust as needed */
+        height: 40px;
+        padding: 0;
+        border-radius: 50%;
+        background-color: #ddd;
+        border: 1px solid #999;
+        font-size: 12px;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        text-align: center;
+        line-height: 40px;
+    }
+    .wind-btn:hover {
+        background-color: #bbb;
+    }
+    .wind-btn.selected {
+        background-color: #f06292;
+        color: #fff;
+        font-weight: bold;
+    }
+    .wind-center-indicator {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 5%;
+        height: 5;
+        transform: translate(-50%, -50%);
+    }
+    .wind-arrow {
+        width: 0;
+        height: 0;
+        border-left: 10px solid transparent;
+        border-right: 10px solid transparent;
+        border-bottom: 20px solid #666; /* Arrow color */
+        transform-origin: center bottom;
+        transition: transform 0.3s ease;
+        margin-top: 35px;
+    }
+    .slope-selector {
+        position: relative;
+        margin-bottom: 20px;
+        text-align: center;
+        max-width: 100%;
+        height: auto;
+    }
     .slope-table {
-      width: 100%;
-      text-align: center;
-      border-collapse: collapse;
-    }
-    
+        width: 100%;
+        text-align: center;
+        border-collapse: collapse;
+    } 
     .slope-table th {
-      padding: 10px;
-      font-size: 16px;
-    }
-    
+        padding: 10px;
+        font-size: 1em;
+    }  
     .slope-table td {
-      vertical-align: middle;
-      padding: 10px;
+        vertical-align: middle;
+        padding: 10px;
     }
-    
     .slope-btn {
-      width: 90px;                /* Fixed width for all buttons */
-      height: 40px;                /* Fixed height for consistency */
-      padding: 8px 16px;
-      margin: 4px 0;
-      border: 1px solid #999;
-      border-radius: 20px;
-      background-color: #ddd;
-      color: white;
-      cursor: pointer;
-      font-size: 12px;
-      text-align: center;
-      vertical-align: middle;
-      transition: background-color 0.2s ease, transform 0.2s ease;
-      white-space: nowrap;         /* Prevent text wrapping */
-      box-sizing: border-box;
+        width: 80px;                
+        height: 40px;                
+        margin: 4px 0;
+        border: 1px solid #999;
+        border-radius: 20px;
+        background-color: #ddd;
+        color: white;
+        cursor: pointer;
+        font-size: 0.75em;
+        text-align: center;
+        vertical-align: middle;
+        transition: background-color 0.2s ease, transform 0.2s ease;
+        white-space: nowrap;         /* Prevent text wrapping */
+        box-sizing: border-box;
     }
-    
-    
     /* Hover effect */
     .slope-btn:hover {
-      background-color: #777;
+        background-color: #777;
     }
-
     /* Selected button override */
     .slope-btn.selected {
-      background-color: #1ED760;
-      color: #fff;
-      font-weight: bold;
-      border-color: #1ED760;
+        background-color: #1ED760;
+        color: #fff;
+        font-weight: bold;
+        border-color: #1ED760;
     }
-
     /* Yellow and Red gradient buttons (special cases) */
     .slope-btn[data-value="Yellow"] {
-      background-color: #FFD54F;
-      color: #333;
-      border-color: #FFC107;
+        background-color: #FFD54F;
+        color: #333;
+        border-color: #FFC107;
     }
-
     .slope-btn[data-value="Yellow"]:hover {
-      background-color: #FFCA28;
+        background-color: #FFCA28;
     }
-
     .slope-btn[data-value="Red"] {
-      background-color: #E57373;
-      color: #fff;
-      border-color: #D32F2F;
+        background-color: #E57373;
+        color: #fff;
+        border-color: #D32F2F;
     }
-
     .slope-btn[data-value="Red"]:hover {
-      background-color: #EF5350;
+        background-color: #EF5350;
     }
-
     /* Keep selected style for Yellow and Red */
     .slope-btn[data-value="Yellow"].selected {
-      background-color: #FFC107;
-      color: #333;
-      border-color: #FFA000;
+        background-color: #FFC107;
+        color: #333;
+        border-color: #FFA000;
     }
-
     .slope-btn[data-value="Red"].selected {
-      background-color: #D32F2F;
-      color: #fff;
-      border-color: #B71C1C;
+        background-color: #D32F2F;
+        color: #fff;
+        border-color: #B71C1C;
+    }
+    .button-group {
+        margin-top: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: space-between;
+    }
+    .calc-btn {
+        flex: 1 1 48%;
+        padding: 17px 48px;
+        font-size: 0.8em;
+        line-height: 1;
+        border-radius: 500px;
+        transition-property: background-color, border-color, color, box-shadow, filter;
+        transition-duration: 0.3s;
+        border: 1px solid transparent;
+        letter-spacing: 2px;
+        min-width: 160px;
+        text-transform: uppercase;
+        white-space: normal;
+        font-weight: 700;
+        text-align: center;
+        color: #fff;
+        cursor: pointer;
+    }
+    /* Calculate Button Style */
+    .calc-btn.calculate {
+        background-color: #1ED760;
+    }
+    .calc-btn.calculate:hover {
+        transform: scale(1.04);
+        background-color: #21e065;
+    }
+    /* Reset Button Style */
+    .calc-btn.reset {
+        background-color: #C41E3A;
+    }
+    .calc-btn.reset:hover {
+        transform: scale(1.04);
+        background-color: #b91c35;
+    }
+    .error {
+        color: red;
+        font-weight: bold;
+        margin-top: 10px;
+    }
+    .result-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+    .result-table td {
+        padding: 8px;
+        border-bottom: 1px solid #ccc;
+    }
+    .key-results {
+        color: green;
+        font-weight: 700;
+        font-size: 2em;
+    }
+    /* Dark Mode Styling */
+    .dark-mode {
+        background-color: #121212;
+        color: #e0e0e0;
+    }
+    .dark-mode .input-section,
+    .dark-mode .output-section,
+    .dark-mode .wind-circle canvas {
+        background-color: #1e1e1e;
+        border-color: #555;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+    }
+    .dark-mode label,
+    .dark-mode h1 {
+        color: #e0e0e0;
+    }
+    .dark-mode input, 
+    .dark-mode select {
+        background-color: #2c2c2c;
+        color: #e0e0e0;
+        border: 1px solid #555;
+    }
+    .dark-mode .swing-btn {
+        background-color: #333;
+        color: #e0e0e0;
+        border-color: #555;
+    }
+    .dark-mode .swing-btn.selected {
+        background-color: #1ED760;
+        color: #fff;
+        border-color: #1ED760;
+    }
+    .dark-mode .wind-btn {
+        background-color: #333;
+        color: #e0e0e0;
+        border-color: #555;
+    }
+    .dark-mode .wind-btn.selected {
+        background-color: #f06292;
+        color: #fff;
+    }
+    .dark-mode .slope-btn {
+        background-color: #333;
+        color: #e0e0e0;
+        border-color: #555;
+    }
+    .dark-mode .slope-btn.selected {
+        background-color: #1ED760;
+        color: #fff;
+        border-color: #1ED760;
+    }
+    .dark-mode .calc-btn.calculate {
+        background-color: #1ED760;
+    }
+    .dark-mode .calc-btn.calculate:hover {
+        background-color: #21e065;
+    }
+    .dark-mode .calc-btn.reset {
+        background-color: #C41E3A;
+    }
+    .dark-mode .calc-btn.reset:hover {
+        background-color: #b91c35;
+    }
+    .dark-mode .error {
+        color: #ff6b6b;
+    }
+    /* Dark Mode Specific Selected Colors for Yellow and Red */
+    .dark-mode .slope-btn[data-value="Green"].selected {
+        background-color: #1ED760;
+        color: #fff;
+        border-color: #1ED760;
+    }
+    .dark-mode .slope-btn[data-value="Yellow"].selected {
+        background-color: #FFC107;
+        color: #333;
+        border-color: #FFA000;
+    }
+    .dark-mode .slope-btn[data-value="Red"].selected {
+        background-color: #D32F2F;
+        color: #fff;
+        border-color: #B71C1C;
     }
 
-    /* 🖤 Dark Mode Support */
-    body.dark-mode .slope-btn {
-      background-color: #555; /* darker neutral gray in dark mode */
-      color: #eee;
-      border-color: #666;
-    }
-
-    body.dark-mode .slope-btn:hover {
-      background-color: #666;
-    }
-
-    body.dark-mode .slope-btn.selected {
-      background-color: #3a9b50;
-      border-color: #3a9b50;
-      color: #fff;
-    }
-
-    body.dark-mode .slope-btn[data-value="Yellow"] {
-      background-color: #FFCA28;
-      color: #222;
-    }
-
-    body.dark-mode .slope-btn[data-value="Yellow"].selected {
-      background-color: #FFC107;
-      color: #222;
-    }
-
-    body.dark-mode .slope-btn[data-value="Red"] {
-      background-color: #E57373;
-      color: #fff;
-    }
-
-    body.dark-mode .slope-btn[data-value="Red"].selected {
-      background-color: #D32F2F;
-      color: #fff;
-    }
-    
   </style>
 </head>
 <body>
-    <div style="text-align:center; margin-bottom: 10px;">
-      <label style="cursor: pointer;">
-        <input type="checkbox" id="darkModeToggle" checked>
-        Dark Mode
-      </label>
-    </div>
   <h1>
-    <img src="https://github.com/campb223/PGA-2k25-Distance-Calculator/blob/main/assets/2k25_logo.png?raw=true" alt="PGA Tour 2k25 Logo" style="max-width: 35%; max-height: 35%;">
+    <img src="https://github.com/campb223/PGA-2k25-Distance-Calculator/blob/main/assets/2k25_logo.png?raw=true" alt="PGA Tour 2k25 Logo" class="pga-logo">
     <br>
     Distance Calculator
   </h1>
+  <div style="text-align:center; margin-bottom: 10px;">
+    <label style="cursor: pointer;">
+        <input class="apple-switch" id="darkModeToggle" type="checkbox" checked>
+        <br>
+        Dark Mode
+    </label>
+  </div>
   <div class="wrapper">
     <!-- Input Section -->
     <div class="input-section">
@@ -419,7 +427,7 @@
 
         <div class="swing-bias-selector">
           <label style="display:block; margin-bottom: 5px;">Swing Bias:</label>
-          <div id="swingBiasSelector" style="display: inline-block; margin: auto; padding: 10px; width: 500px;">
+          <div id="swingBiasSelector" class="swingBiasSelector">
             <button type="button" class="swing-btn selected" data-value="draw" onclick="setSwingBias('draw')">Draw</button>
             <button type="button" class="swing-btn" data-value="fade" onclick="setSwingBias('fade')">Fade</button>
           </div>
@@ -427,21 +435,25 @@
         </div>
 
         <label>Yards to Pin:<input type="number" id="yardsToPin" required></label>
-        <label>Elevation (in feet) (Input negative # for downhill):<input type="number" id="elevation" required></label>
+        <label>Elevation (feet) 
+            <br>
+            (- for downhill):
+            <input type="number" id="elevation" required>
+        </label>
         <label>Wind Speed (mph):<input type="number" id="windSpeed" required></label>
         <label style="display: none;">Wind Direction (degrees):<input type="number" id="windDir" required></label>
 
         <div class="wind-circle">
-          <label style="display:block; text-align:left;">Wind Direction:</label>
-          <div id="windDirectionSelector" class="wind-circle-container" style="max-height: 700px;">
-            <button type="button" class="wind-btn" style="top: 0%; left: 50%;" onclick="setWindDir(0)">N</button>
-            <button type="button" class="wind-btn" style="top: 20%; left: 80%;" onclick="setWindDir(45)">NE</button>
-            <button type="button" class="wind-btn" style="top: 50%; left: 100%;" onclick="setWindDir(90)">E</button>
-            <button type="button" class="wind-btn" style="top: 80%; left: 80%;" onclick="setWindDir(135)">SE</button>
-            <button type="button" class="wind-btn" style="top: 100%; left: 50%;" onclick="setWindDir(180)">S</button>
-            <button type="button" class="wind-btn" style="top: 80%; left: 20%;" onclick="setWindDir(225)">SW</button>
-            <button type="button" class="wind-btn" style="top: 50%; left: 0%;" onclick="setWindDir(270)">W</button>
-            <button type="button" class="wind-btn" style="top: 20%; left: 20%;" onclick="setWindDir(315)">NW</button>
+          <label style="display:block; text-align:left; margin-bottom: 10px;">Wind Direction:</label>
+          <div id="windDirectionSelector" class="wind-circle-container">
+            <button type="button" class="wind-btn" style="top: 0%; left: 45%;" onclick="setWindDir(0)">N</button>
+            <button type="button" class="wind-btn" style="top: 20%; left: 75%;" onclick="setWindDir(45)">NE</button>
+            <button type="button" class="wind-btn" style="top: 50%; left: 95%;" onclick="setWindDir(90)">E</button>
+            <button type="button" class="wind-btn" style="top: 80%; left: 75%;" onclick="setWindDir(135)">SE</button>
+            <button type="button" class="wind-btn" style="top: 100%; left: 45%;" onclick="setWindDir(180)">S</button>
+            <button type="button" class="wind-btn" style="top: 80%; left: 15%;" onclick="setWindDir(225)">SW</button>
+            <button type="button" class="wind-btn" style="top: 50%; left: -5%;" onclick="setWindDir(270)">W</button>
+            <button type="button" class="wind-btn" style="top: 20%; left: 15%;" onclick="setWindDir(315)">NW</button>
             <div class="wind-center-indicator">
               <div class="wind-arrow"></div>
             </div>
@@ -502,15 +514,16 @@
 
     <!-- Output Section -->
     <div class="output-section">
-      <table class="result-table2">
-        <tr><td>Rough Min Carry Distance:</td><td id="minCarry">0.0 yds</td></tr>
-        <tr><td>Rough Max Carry Distance:</td><td id="maxCarry">0.0 yds</td></tr>
-      </table>
-
-      <table class="result-table">
-        <tr class="key-results"><td>Playing Distance:</td><td id="playDist">0.0 yds</td></tr>
-        <tr class="key-results"><td>Left/Right Offset:</td><td id="lrOffset">0.0 yds</td></tr>
-      </table>
+      
+        <table class="result-table">
+            <tr class="key-results"><td>Playing Distance:</td><td id="playDist">0.0 yds</td></tr>
+            <tr class="key-results"><td>Left/Right Offset:</td><td id="lrOffset">0.0 yds</td></tr>
+        </table>
+        <br>
+        <table class="result-table2">
+            <tr><td>Rough Min Carry Distance:</td><td id="minCarry">0.0 yds</td></tr>
+            <tr><td>Rough Max Carry Distance:</td><td id="maxCarry">0.0 yds</td></tr>
+        </table>
     </div>
   </div>
 
@@ -554,7 +567,6 @@
       const crosswind = baseCrosswind * swingBiasMultiplier;
 
       const headwindStrength = Math.abs(headwind);
-      //let windAdj = Math.min(headwind, 10)*1 + Math.max(0, Math.min(headwind-10, 6))*1.5 + Math.max(0, headwind-16)*2;
       let windAdj = Math.min(headwindStrength, 10) * 1 
             + Math.max(0, Math.min(headwindStrength - 10, 6)) * 1.5 
             + Math.max(0, headwindStrength - 16) * 2;
@@ -646,7 +658,6 @@
     }
 
     function resetForm() {
-      //document.querySelectorAll('input, select').forEach(el => el.value = el.tagName === 'SELECT' ? el.options[0].value : '');
       document.querySelectorAll('input').forEach(el => el.value = '');
       document.querySelectorAll('select').forEach(el => {
         if (el.id !== 'swingBias') {
@@ -671,77 +682,6 @@
       const degrees = (angle + 450) % 360; // Adjust so 0° is at the top
       document.getElementById('windDir').value = Math.round(degrees);
     }
-
-    /*
-
-    const canvas = document.getElementById('windCanvas');
-    const ctx = canvas.getContext('2d');
-    const center = { x: canvas.width / 2, y: canvas.height / 2 };
-    const radius = 100;
-    let dragging = true;
-    let end = { x: center.x + radius, y: center.y };
-
-    function drawWindSelector() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-      // Draw circle
-      ctx.beginPath();
-      ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI);
-      ctx.stroke();
-    
-      // Draw main wind direction line
-      ctx.beginPath();
-      ctx.moveTo(center.x, center.y);
-      ctx.lineTo(end.x, end.y);
-      ctx.strokeStyle = '#00f';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-    
-      // Draw arrowhead
-      const dx = end.x - center.x;
-      const dy = end.y - center.y;
-      const angle = Math.atan2(dy, dx);
-    
-      const arrowLength = 10;
-      const arrowAngle = Math.PI / 8;
-    
-      // Points for arrowhead
-      const arrowX1 = end.x - arrowLength * Math.cos(angle - arrowAngle);
-      const arrowY1 = end.y - arrowLength * Math.sin(angle - arrowAngle);
-      const arrowX2 = end.x - arrowLength * Math.cos(angle + arrowAngle);
-      const arrowY2 = end.y - arrowLength * Math.sin(angle + arrowAngle);
-    
-      ctx.beginPath();
-      ctx.moveTo(end.x, end.y);
-      ctx.lineTo(arrowX1, arrowY1);
-      ctx.moveTo(end.x, end.y);
-      ctx.lineTo(arrowX2, arrowY2);
-      ctx.stroke();
-    }
-      
-
-    canvas.addEventListener('mousemove', function (e) {
-      if (!dragging) return;
-      const rect = canvas.getBoundingClientRect();
-      const mouseX = e.clientX - rect.left;
-      const mouseY = e.clientY - rect.top;
-      end.x = mouseX;
-      end.y = mouseY;
-      drawWindSelector();
-
-      const dx = mouseX - center.x;
-      const dy = mouseY - center.y;
-      const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-      const degrees = (angle + 450) % 360; // 0° = top
-      document.getElementById('windDir').value = Math.round(degrees);
-    });
-
-    canvas.addEventListener('click', function () {
-      dragging = !dragging;
-    });
-
-    drawWindSelector();
-    */
 
     function setWindDir(degrees) {
       document.getElementById('windDir').value = degrees;
@@ -807,19 +747,20 @@
       if (selectedBtn) selectedBtn.classList.add('selected');
     }
 
-    // Dark mode toggle logic
-    const darkModeToggle = document.getElementById('darkModeToggle');
+    // Dark mode toggle logicconst darkModeToggle = document.querySelector('.apple-switch'); // Target your checkbox
     const body = document.body;
 
     // Enable dark mode by default on page load
     body.classList.add('dark-mode');
+    darkModeToggle.checked = true;
 
-    darkModeToggle.addEventListener('change', function() {
-    if (this.checked) {
+    // Toggle dark mode when the switch changes
+    darkModeToggle.addEventListener('change', function () {
+        if (this.checked) {
         body.classList.add('dark-mode');
-    } else {
+        } else {
         body.classList.remove('dark-mode');
-    }
+        }
     });
   </script>
 </body>
