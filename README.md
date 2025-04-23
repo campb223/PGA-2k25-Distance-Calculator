@@ -4,7 +4,7 @@ A clean and interactive web-based tool to help players accurately calculate the 
 
 ## 🌐 Live Webpage
 
-Try the calculator live here: [PGA Tour 2k25 Distance Calculator](https://sites.google.com/view/mtndewme5-pga-2k25-calculator/main)
+Try the calculator live here: [PGA Tour 2k25 Distance Calculator](https://pga-2k25-distance-calculator.vercel.app/)
 
 
 ## 🎯 Features
